@@ -2,20 +2,20 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import Router from "./Router.tsx";
-import { ThemeProvider } from "@/components/ThemeProvider.tsx";
 import { BrowserRouter } from "react-router";
 import { UserProvider } from "./components/UserProvider/UserProvider.tsx";
 import { Toaster } from "@/components/ui/sonner";
+import { BackdropProvider } from "./components/BackdropProvider/BackdropProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <BackdropProvider>
         <UserProvider>
           <Router />
           <Toaster />
         </UserProvider>
-      </ThemeProvider>
+      </BackdropProvider>
     </BrowserRouter>
   </StrictMode>
 );
