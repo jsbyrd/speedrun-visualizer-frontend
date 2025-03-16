@@ -30,7 +30,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserInfo = async () => {
     try {
-      const res = await customAxios.get("/users/");
+      const res = await customAxios.get("/User/");
       setUsername(res.data.username);
       setIsLoggedIn(true);
       console.log("logged into " + res.data.username);
