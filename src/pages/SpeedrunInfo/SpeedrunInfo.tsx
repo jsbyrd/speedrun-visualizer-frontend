@@ -133,7 +133,7 @@ const SpeedrunInfo = () => {
   if (!game) return <div className={`${pageLayout}`}>Game not found</div>;
 
   return (
-    <div className={`${pageLayout}`}>
+    <div className={`${pageLayout} justify-center items-center`}>
       <GameInfo game={game} />
       {game && game.categories && game.variables && (
         <GameOptions

@@ -1,0 +1,53 @@
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pagination-page,
+.pagination-previous,
+.pagination-next,
+.pagination-break {
+  margin: 0 0.25rem;
+}
+
+.pagination-page-link,
+.pagination-previous-link,
+.pagination-next-link,
+.pagination-break-link {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  background-color: rgb(55 65 81); /* Equivalent to bg-gray-700 */
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-page-link:hover,
+.pagination-previous-link:hover,
+.pagination-next-link:hover,
+.pagination-break-link:hover {
+  background-color: rgba(
+    55,
+    65,
+    81,
+    0.8
+  ); /* Equivalent to hover:bg-gray-700/80 */
+}
+
+.pagination-active {
+  background-color: rgb(59 130 246); /* Equivalent to bg-blue-500 */
+}
+
+.pagination-active:hover {
+  background-color: rgba(
+    59,
+    130,
+    246,
+    0.8
+  ); /* Equivalent to hover:bg-blue-500/80 */
+}
+
+.pagination-active-link {
+  color: white;
+}

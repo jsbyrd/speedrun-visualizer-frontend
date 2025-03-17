@@ -21,7 +21,7 @@ const DropMenu = () => {
 
   const handleLogoutPress = async () => {
     try {
-      await customAxios.post("/auth/logout");
+      await customAxios.post("/Auth/logout");
       toast("Successful logout", {
         description: `You have logged out of ${username}, goodbye 😞`,
       });
@@ -86,15 +86,15 @@ const DropMenu = () => {
             disabled
           >
             <Swords />
-            Game History
+            Favorites
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              navigate("/history/minigames");
+              navigate("/search-history");
             }}
           >
             <Gamepad2 />
-            Minigame History
+            Search History
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

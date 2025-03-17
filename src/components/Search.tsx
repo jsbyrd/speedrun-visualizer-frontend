@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useBackdrop } from "@/components/BackdropProvider/BackdropProvider";
 import { NavLink } from "react-router";
+import customAxios from "@/api/custom-axios";
 
 interface Game {
   id: string;
@@ -97,12 +98,23 @@ const Search = () => {
     }, 100);
   };
 
-  // New function to handle item selection
-  const handleSearchItemClick = () => {
+  const handleSearchItemClick = async (game: Game) => {
     setOpen(false);
     setSearchResults([]);
     setSearchTerm("");
     setBackdropVisible(false);
+
+    try {
+      await customAxios.post("/SearchHistory", {
+        gameId: game.id,
+        name: game.names.international,
+        imageUri: game.assets["cover-tiny"].uri,
+      });
+      // Optionally, handle success (e.g., show a message)
+    } catch (error) {
+      console.error("Error creating search history:", error);
+      // Optionally, handle error (e.g., show an error message)
+    }
   };
 
   return (
@@ -133,7 +145,7 @@ const Search = () => {
                   key={game.id}
                   to={`/speedrun?gameId=${game.id}`}
                   className="flex items-center p-2 hover:bg-secondary rounded"
-                  onClick={handleSearchItemClick} // Call the function on click
+                  onClick={() => handleSearchItemClick(game)} // Call the function on click
                 >
                   {game.assets["cover-tiny"] && (
                     <img
