@@ -32,9 +32,6 @@ const GameOptions: React.FC<GameOptionsProps> = ({
   setSelectedCategory,
   setSelectedVariables,
 }) => {
-  console.log("availableVariables", availableVariables);
-  console.log("selectedVariables", selectedVariables);
-
   return (
     <div className="mt-4">
       <div className="flex flex-wrap gap-2" style={{ maxWidth: "80vw" }}>

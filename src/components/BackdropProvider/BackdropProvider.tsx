@@ -1,4 +1,3 @@
-// context.tsx
 import { createContext, useState, useContext } from "react";
 
 type BackdropContextType = {

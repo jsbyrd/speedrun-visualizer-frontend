@@ -14,6 +14,7 @@ import { Leaderboard, Run } from "./types";
 import { Link } from "react-router";
 import { Video } from "lucide-react";
 import { formatTime } from "@/lib/format-time";
+import { CircularProgress } from "@mui/material";
 
 ChartJS.register(
   CategoryScale,
@@ -30,7 +31,12 @@ type ChartDisplayProps = {
 };
 
 const ChartDisplay: React.FC<ChartDisplayProps> = ({ leaderboard }) => {
-  if (!leaderboard) return null;
+  if (!leaderboard)
+    return (
+      <div className="flex justify-center items-center mt-12">
+        <CircularProgress size={100} />
+      </div>
+    );
   const [activePlayerIndex, setActivePlayerIndex] = useState<number | null>(
     null
   );

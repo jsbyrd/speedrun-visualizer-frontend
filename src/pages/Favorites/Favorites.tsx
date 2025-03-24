@@ -1,59 +1,36 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router";
-// import { Trash } from "lucide-react";
-import customAxios from "@/api/custom-axios";
+import { Trash } from "lucide-react";
 import { pageLayout } from "@/lib/common-styles";
 import ReactPaginate from "react-paginate";
+import { useFavorites } from "@/components/FavoritesProvider/FavoritesProvider";
+import customAxios from "@/api/custom-axios";
 
-interface SearchHistoryItem {
-  id: string;
-  gameId: string;
-  name: string;
-  imageUri: string;
-  lastSearched: string;
-}
-
-const SearchHistory = () => {
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+const Favorites = () => {
+  const { favorites, fetchFavorites } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 5;
 
-  const fetchSearchHistory = useCallback(async () => {
-    try {
-      const response = await customAxios.get("/SearchHistory");
-      const sortedData = response.data.sort(
-        (a: SearchHistoryItem, b: SearchHistoryItem) => {
-          return (
-            new Date(b.lastSearched).getTime() -
-            new Date(a.lastSearched).getTime()
-          );
-        }
-      );
-      setSearchHistory(sortedData);
-    } catch (error) {
-      console.error("Error fetching search history:", error);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchSearchHistory();
-  }, [fetchSearchHistory]);
+    if (!favorites) {
+      fetchFavorites();
+    }
+  }, [favorites, fetchFavorites]);
 
-  // const handleDelete = async (id: string) => {
-  //   try {
-  //     await customAxios.delete(`/SearchHistory/${id}`);
-  //     fetchSearchHistory(); // Refresh after delete
-  //   } catch (error) {
-  //     console.error("Error deleting search history item:", error);
-  //   }
-  // };
+  const handleDelete = async (id: string) => {
+    try {
+      await customAxios.delete(`/Favorite/${id}`);
+      await fetchFavorites();
+    } catch (error) {
+      console.error("Error deleting favorite:", error);
+    }
+  };
 
-  const pageCount = Math.ceil(searchHistory.length / itemsPerPage);
+  const pageCount = favorites ? Math.ceil(favorites.length / itemsPerPage) : 0;
   const offset = currentPage * itemsPerPage;
-  const paginatedSearchHistory = searchHistory.slice(
-    offset,
-    offset + itemsPerPage
-  );
+  const paginatedFavoriteGames = favorites
+    ? favorites.slice(offset, offset + itemsPerPage)
+    : [];
 
   const handlePageClick = (selectedItem: { selected: number }) => {
     setCurrentPage(selectedItem.selected);
@@ -76,17 +53,17 @@ const SearchHistory = () => {
   return (
     <div className={`${pageLayout} items-center h-full`}>
       <h1 className="py-4 mt-2 text-4xl font-semibold text-white">
-        Recently Searched
+        Favorite Games
       </h1>
-      {searchHistory.length === 0 ? (
-        <p className="text-white">No search history found.</p>
+      {favorites?.length === 0 ? (
+        <p className="text-white">No favorite games found.</p>
       ) : (
         <div className="flex flex-col justify-between w-full h-full">
           <ul className="mt-2 overflow-y-auto w-full">
-            {paginatedSearchHistory.map((item) => (
+            {paginatedFavoriteGames.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center p-2 text-white hover:bg-white/20"
+                className="flex items-center p-2 text-white hover:bg-white/20 gap-10"
               >
                 <NavLink
                   to={`/speedrun?gameId=${item.gameId}`}
@@ -100,16 +77,18 @@ const SearchHistory = () => {
                     />
                   )}
                   <span className="flex-grow text-lg">{item.name}</span>
-                  <span className="text-lg select-none">
-                    {formatDate(item.lastSearched)}
-                  </span>
                 </NavLink>
-                {/* <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-500"
-                >
-                  <Trash className="w-4 h-4" />
-                </button> */}
+                <div className="flex items-center gap-4">
+                  <span className="text-lg select-none">
+                    {formatDate(item.dateFavorited)}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="ml-2 px-2 py-2 transition-colors duration-200 hover:cursor-pointer hover:text-red-500"
+                  >
+                    <Trash className="w-6 h-6" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -139,4 +118,4 @@ const SearchHistory = () => {
   );
 };
 
-export default SearchHistory;
+export default Favorites;

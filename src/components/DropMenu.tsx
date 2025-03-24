@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useUser } from "./UserProvider/use-user-hook";
-import { Gamepad2, LogOut, Settings, Swords, User } from "lucide-react";
+import { Heart, History, LogOut, Settings, User } from "lucide-react";
 import customAxios from "@/api/custom-axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -63,9 +63,10 @@ const DropMenu = () => {
             onClick={() => {
               navigate("/");
             }}
+            disabled
           >
             <User />
-            Profile
+            {username}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -81,11 +82,10 @@ const DropMenu = () => {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {
-              navigate("/");
+              navigate("/favorites");
             }}
-            disabled
           >
-            <Swords />
+            <Heart />
             Favorites
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -93,7 +93,7 @@ const DropMenu = () => {
               navigate("/search-history");
             }}
           >
-            <Gamepad2 />
+            <History />
             Search History
           </DropdownMenuItem>
         </DropdownMenuGroup>

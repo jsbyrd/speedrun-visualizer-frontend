@@ -1,6 +1,10 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Game } from "./types";
 import { Badge } from "@/components/ui/badge";
+import { Heart } from "lucide-react";
+import { useFavorites } from "@/components/FavoritesProvider/FavoritesProvider";
+import customAxios from "@/api/custom-axios";
+import { toast } from "sonner";
 
 type GameInfoProps = {
   game: Game;
@@ -8,6 +12,60 @@ type GameInfoProps = {
 
 const GameInfo: React.FC<GameInfoProps> = ({ game }) => {
   if (!game) return null;
+  const { favorites, fetchFavorites } = useFavorites();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  useEffect(() => {
+    if (favorites) {
+      const alreadyFavorited = favorites.some((fav) => fav.gameId === game.id);
+      setIsFavorited(alreadyFavorited);
+    }
+  }, [favorites, game.id]);
+
+  const handleFavoriteClick = async () => {
+    let successfulOperation = false;
+    const currentFavoritedStatus = isFavorited;
+    setIsFavorited(!currentFavoritedStatus);
+    try {
+      if (isFavorited) {
+        // Find the favorite to delete
+        const favoriteToDelete = favorites?.find(
+          (fav) => fav.gameId === game.id
+        );
+        if (favoriteToDelete) {
+          await customAxios.delete(`/Favorite/${favoriteToDelete.id}`);
+          toast("Operation successful", {
+            description: `${game.names.international} has been removed from your favorites.`,
+          });
+        }
+      } else {
+        // Create a new favorite
+        await customAxios.post("/Favorite", {
+          gameId: game.id,
+          name: game.names.international,
+          imageUri: game.assets["cover-medium"].uri,
+        });
+        toast("Operation successful", {
+          description: `${game.names.international} has been added to your favorites.`,
+        });
+      }
+      successfulOperation = true;
+    } catch (error) {
+      // Revert favorited status if an operation fails
+      setIsFavorited(currentFavoritedStatus);
+      console.error("Error toggling favorite:", error);
+      toast("Operation failed", {
+        description: `Something went wrong when trying to ${
+          isFavorited ? "remove" : "add"
+        } ${
+          game.names.international
+        } to your favorites. Please try again later.`,
+      });
+    } finally {
+      // Update favorites after creation/deletion
+      if (successfulOperation) await fetchFavorites();
+    }
+  };
 
   return (
     <div className="flex items-start py-4">
@@ -69,6 +127,14 @@ const GameInfo: React.FC<GameInfoProps> = ({ game }) => {
               Speedrun.com
             </a>
           )}
+          <button
+            onClick={handleFavoriteClick}
+            className={`ml-2 px-2 py-2 transition-colors duration-100 hover:cursor-pointer ${
+              isFavorited ? "text-red-500" : "text-white"
+            }`}
+          >
+            <Heart className="w-6 h-6" fill={isFavorited ? "red" : "none"} />
+          </button>
         </div>
       </div>
     </div>

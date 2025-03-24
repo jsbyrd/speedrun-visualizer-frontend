@@ -6,14 +6,17 @@ import { BrowserRouter } from "react-router";
 import { UserProvider } from "./components/UserProvider/UserProvider.tsx";
 import { Toaster } from "@/components/ui/sonner";
 import { BackdropProvider } from "./components/BackdropProvider/BackdropProvider.tsx";
+import { FavoritesProvider } from "./components/FavoritesProvider/FavoritesProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <BackdropProvider>
         <UserProvider>
-          <Router />
-          <Toaster />
+          <FavoritesProvider>
+            <Router />
+            <Toaster />
+          </FavoritesProvider>
         </UserProvider>
       </BackdropProvider>
     </BrowserRouter>
