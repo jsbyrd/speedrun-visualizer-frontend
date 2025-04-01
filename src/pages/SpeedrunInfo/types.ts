@@ -36,6 +36,9 @@ export type Variable = {
   values: {
     values: VariableValues;
   };
+  scope: {
+    type: string;
+  };
   category: string;
   mandatory: boolean;
 };
@@ -66,7 +69,24 @@ export type RunDetails = {
   times: {
     primary_t: number;
   };
+  date: string;
+  data: Player[];
   players: Player[];
+  videos: {
+    links: VideoLink[];
+  };
+};
+
+export type RunData = {
+  times: {
+    primary_t: number;
+  };
+  date: string;
+  data: Player[];
+  players: {
+    data: Player[];
+  };
+  values: Record<string, string>;
   videos: {
     links: VideoLink[];
   };

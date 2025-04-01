@@ -34,7 +34,7 @@ const GameOptions: React.FC<GameOptionsProps> = ({
 }) => {
   return (
     <div className="mt-4">
-      <div className="flex flex-wrap gap-2" style={{ maxWidth: "80vw" }}>
+      <div className="flex justify-center flex-wrap gap-2">
         {categories.map((category) => (
           <button
             key={category.id}
@@ -50,7 +50,7 @@ const GameOptions: React.FC<GameOptionsProps> = ({
           </button>
         ))}
       </div>
-      <div className="mt-4 flex flex-wrap gap-4">
+      <div className="mt-4 flex justify-center flex-wrap gap-4">
         {availableVariables.map((variable) => (
           <div key={variable.id} className="flex flex-col">
             <label className="block text-md text-white/90 mb-1">

@@ -33,7 +33,7 @@ type ChartDisplayProps = {
 const ChartDisplay: React.FC<ChartDisplayProps> = ({ leaderboard }) => {
   if (!leaderboard)
     return (
-      <div className="flex justify-center items-center mt-12">
+      <div className="flex justify-center items-center">
         <CircularProgress size={100} />
       </div>
     );

@@ -4,9 +4,18 @@ import { pageLayout } from "@/lib/common-styles";
 import GameInfo from "./GameInfo";
 import GameOptions from "./GameOptions";
 import ChartDisplay from "./ChartDisplay";
-import { Category, Game, Leaderboard, Variable, VariableValues } from "./types";
+import {
+  Category,
+  Game,
+  Leaderboard,
+  Variable,
+  VariableValues,
+  RunData,
+} from "./types";
 import { CircularProgress } from "@mui/material";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TopTenHistory from "./TopTenHistory";
 
 const SpeedrunInfo = () => {
   const [searchParams] = useSearchParams();
@@ -20,6 +29,9 @@ const SpeedrunInfo = () => {
     {}
   );
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
+  const [runs, setRuns] = useState<RunData[]>([]);
+  const [isLoadingRuns, setIsLoadingRuns] = useState(false);
+  const [topTenHistory, setTopTenHistory] = useState<RunData[]>([]);
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -39,13 +51,12 @@ const SpeedrunInfo = () => {
             (category) => category.type !== "per-level"
           )
         );
-        // This is to avoid level-specific categories. When I add levels, this will no longer be necessary
         const firstSelectedCategory = fetchedGame.categories.data.find(
           (cat) => cat.type !== "per-level"
         );
         if (!firstSelectedCategory)
           throw new Error(
-            `Failed to find a per-game category for ${game?.names.international}`
+            `Failed to find a per-game category for ${game?.names?.international}`
           );
         setSelectedCategory(firstSelectedCategory.id as string);
       } catch (err: any) {
@@ -69,7 +80,10 @@ const SpeedrunInfo = () => {
       ) {
         const categoryVariables: Variable[] = game.variables.data.filter(
           (variable) =>
-            variable.category === selectedCategory && variable.mandatory
+            (variable.category === selectedCategory ||
+              variable.category == null) &&
+            variable.mandatory &&
+            (!variable.scope.type || !variable.scope.type.includes("level"))
         );
         setAvailableVariables(categoryVariables);
         const initialSelectedVariables: {
@@ -115,10 +129,143 @@ const SpeedrunInfo = () => {
     }
   };
 
+  const fetchAllRuns = async () => {
+    if (!game) return;
+    setIsLoadingRuns(true);
+    try {
+      let url = `https://www.speedrun.com/api/v1/runs?game=${game.id}&category=${selectedCategory}&embed=players&status=verified&orderby=date&max=200`;
+      Object.entries(selectedVariables).forEach(([varId, value]) => {
+        url += `&var-${varId}=${value.id}`;
+      });
+
+      let allRuns: RunData[] = [];
+      let nextUrl: string | null = url;
+
+      while (nextUrl) {
+        let runsResponse: any;
+        let retry = true;
+        while (retry) {
+          runsResponse = await fetch(nextUrl);
+          if (runsResponse.status === 420) {
+            console.log("Rate limit reached. Waiting 1 second...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          } else {
+            retry = false;
+          }
+        }
+        if (!runsResponse.ok) {
+          throw new Error("Failed to fetch runs");
+        }
+        const runsData = await runsResponse.json();
+        allRuns = allRuns.concat(runsData.data as RunData[]);
+        if (runsData.pagination && runsData.pagination.links) {
+          const nextLink = runsData.pagination.links.find(
+            (link: any) => link.rel === "next"
+          );
+          nextUrl = nextLink ? nextLink.uri : null;
+        } else {
+          nextUrl = null;
+        }
+      }
+
+      const top10: RunData[] = [];
+      const top10History: RunData[] = [];
+      const runsWithCorrectVariables = allRuns.filter((run) => {
+        for (const varId in selectedVariables) {
+          if (run.values[varId] !== selectedVariables[varId].id) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      const startTime = performance.now();
+
+      runsWithCorrectVariables.forEach((run) => {
+        if (!run.date) {
+          return;
+        }
+
+        const runTime = run.times.primary_t;
+        const player = run.players.data[0];
+        if (!player) return;
+        const playerId = player.id;
+
+        const duplicatePlayerIndex = top10.findIndex(
+          (topRun) => topRun.players.data[0].id === playerId
+        );
+
+        if (top10.length < 10) {
+          console.log(run);
+          if (
+            duplicatePlayerIndex !== -1 &&
+            run.times.primary_t < top10[duplicatePlayerIndex].times.primary_t
+          )
+            top10[duplicatePlayerIndex] = run;
+          else if (
+            duplicatePlayerIndex !== -1 &&
+            run.times.primary_t > top10[duplicatePlayerIndex].times.primary_t
+          ) {
+            return;
+          } else top10.push(run);
+          top10.sort((a, b) => a.times.primary_t - b.times.primary_t);
+          top10History.push(run);
+          return;
+        }
+
+        if (runTime <= top10[9].times.primary_t) {
+          if (
+            duplicatePlayerIndex !== -1 &&
+            runTime < top10[duplicatePlayerIndex].times.primary_t
+          ) {
+            top10[duplicatePlayerIndex] = run;
+            top10.sort((a, b) => a.times.primary_t - b.times.primary_t);
+            return;
+          }
+
+          let tempRun = run;
+          for (let i = 0; i < 10; i++) {
+            if (runTime < top10[i].times.primary_t) {
+              const swapRun = top10[i];
+              top10[i] = tempRun;
+              tempRun = swapRun;
+            }
+          }
+        }
+        top10History.push(run);
+      });
+
+      const endTime = performance.now(); // End timing
+      const duration = endTime - startTime; // Calculate duration
+
+      console.log("Top 10:", top10);
+      console.log("Top 10 History:", top10History);
+      console.log(`forEach loop execution time: ${duration} milliseconds`);
+
+      setTopTenHistory(top10History);
+      setRuns(allRuns);
+    } catch (error) {
+      console.log(error);
+      toast("Operation failed", { description: "Failed to fetch runs data." });
+    } finally {
+      setIsLoadingRuns(false);
+    }
+  };
+
   useEffect(() => {
     if (!game || !selectedCategory) return;
     fetchLeaderboard();
+    setRuns([]);
+    setTopTenHistory([]);
   }, [game, selectedCategory, selectedVariables]);
+
+  const handleDebug = () => {
+    console.log("gameId", gameId);
+    console.log("categoryId", selectedCategory);
+    console.log("variables", selectedVariables);
+    console.log("availableVariables", availableVariables);
+    console.log("runs", runs);
+  };
 
   if (!game)
     return (
@@ -129,6 +276,7 @@ const SpeedrunInfo = () => {
 
   return (
     <div className={`${pageLayout} items-center`}>
+      <button onClick={handleDebug}>Debug</button>
       <GameInfo game={game} />
       {game && game.categories && game.variables && (
         <GameOptions
@@ -140,7 +288,22 @@ const SpeedrunInfo = () => {
           setSelectedVariables={setSelectedVariables}
         />
       )}
-      <ChartDisplay leaderboard={leaderboard} />
+      <Tabs defaultValue="chart" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mt-12">
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+          <TabsTrigger value="history">Top 10 History</TabsTrigger>
+        </TabsList>
+        <TabsContent value="chart">
+          <ChartDisplay leaderboard={leaderboard} />
+        </TabsContent>
+        <TabsContent value="history">
+          <TopTenHistory
+            runs={topTenHistory}
+            isLoading={isLoadingRuns}
+            onFetchRuns={fetchAllRuns}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
