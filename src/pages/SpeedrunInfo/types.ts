@@ -78,6 +78,7 @@ export type RunDetails = {
 };
 
 export type RunData = {
+  id: string;
   times: {
     primary_t: number;
   };
@@ -94,10 +95,12 @@ export type RunData = {
 
 export type Player = {
   id: string;
+  name: string;
   names: {
     international: string;
     japanese: string;
   };
+  rel: string;
 };
 
 export type VideoLink = {
