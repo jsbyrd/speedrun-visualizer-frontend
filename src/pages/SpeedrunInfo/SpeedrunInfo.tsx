@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router";
 import { pageLayout } from "@/lib/common-styles";
 import GameInfo from "./GameInfo";
 import GameOptions from "./GameOptions";
-import ChartDisplay from "./ChartDisplay";
+import Top100Chart from "./TopTenChart";
 import {
   Category,
   Game,
@@ -14,9 +14,9 @@ import {
 } from "./types";
 import { CircularProgress } from "@mui/material";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TopTenHistory from "./TopTenHistory";
 import { fetchAllRunsData, fetchLeaderboardData } from "./utils";
+import Top100Table from "./Top100Table";
 
 const SpeedrunInfo = () => {
   const [searchParams] = useSearchParams();
@@ -85,11 +85,8 @@ const SpeedrunInfo = () => {
             variable.mandatory &&
             (!variable.scope.type || !variable.scope.type.includes("level"))
         );
-
         const validVariables = categoryVariables.filter(isValidVariable);
-
         setAvailableVariables(validVariables);
-
         const initialSelectedVariables: VariableValues = {};
         validVariables.forEach((variable) => {
           if (variable.values && variable.values.values) {
@@ -119,7 +116,8 @@ const SpeedrunInfo = () => {
       const leaderboardData = await fetchLeaderboardData(
         game.id,
         selectedCategory,
-        selectedVariables
+        selectedVariables,
+        100
       );
       setLeaderboard(leaderboardData);
     } catch (err: any) {
@@ -156,8 +154,6 @@ const SpeedrunInfo = () => {
   }, [game, selectedCategory, selectedVariables]);
 
   const handleDebug = () => {
-    //constsuigiBestRun=runs.find((run)=>run.times.primary_t==5728);
-    //console.log(suigiBestRun);
     console.log("leaderboard", leaderboard);
     console.log("gameId", gameId);
     console.log("categoryId", selectedCategory);
@@ -187,22 +183,22 @@ const SpeedrunInfo = () => {
           setSelectedVariables={setSelectedVariables}
         />
       )}
-      <Tabs defaultValue="chart" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mt-12">
-          <TabsTrigger value="chart">Chart</TabsTrigger>
-          <TabsTrigger value="history">Top10History</TabsTrigger>
-        </TabsList>
-        <TabsContent value="chart">
-          <ChartDisplay leaderboard={leaderboard} />
-        </TabsContent>
-        <TabsContent value="history">
-          <TopTenHistory
-            runs={runs}
-            isLoading={isLoadingRuns}
-            onFetchRuns={fetchAllRuns}
-          />
-        </TabsContent>
-      </Tabs>
+      <div className="w-full mt-12">
+        <h2 className="text-2xl font-bold mb-4">Current Top 10</h2>
+        <Top100Chart leaderboard={leaderboard} />
+      </div>
+      <div className="w-full mt-12">
+        <h2 className="text-2xl font-bold mb-4">Top 10 History</h2>
+        <TopTenHistory
+          runs={runs}
+          isLoading={isLoadingRuns}
+          onFetchRuns={fetchAllRuns}
+        />
+      </div>
+      <div className="w-full mt-12">
+        <h2 className="text-2xl font-bold mb-4">Current Top 100 Runs</h2>
+        <Top100Table leaderboard={leaderboard} />
+      </div>
     </div>
   );
 };
@@ -211,13 +207,11 @@ function isValidVariable(variable: Variable) {
   if (!variable.values || !variable.values.values) {
     return true;
   }
-
   for (const valueKey in variable.values.values) {
     if (variable.values.values[valueKey].rules === "test") {
       return false;
     }
   }
-
   return true;
 }
 

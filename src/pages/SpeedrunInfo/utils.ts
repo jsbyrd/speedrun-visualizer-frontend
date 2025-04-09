@@ -1,10 +1,9 @@
 import { Leaderboard, RunData, VariableValues } from "./types";
 import { format, parseISO } from "date-fns";
 
-/**
+/***
  * Fetches all runs data for a given game, category, and variables.
  * Breaks when a category has over 20,000 runs (thank you speedrun.com API).
- *
  * @param gameId The ID of the game.
  * @param selectedCategory The ID of the selected category.
  * @param selectedVariables The selected variables and their values.
@@ -19,7 +18,6 @@ export async function fetchAllRunsData(
   Object.entries(selectedVariables).forEach(([varId, value]) => {
     url += `&var-${varId}=${value.id}`;
   });
-
   let allRuns: RunData[] = [];
   let nextUrl: string | null = url;
   let tenthousandthRunDate: Date | null = null;
@@ -27,9 +25,7 @@ export async function fetchAllRunsData(
 
   while (nextUrl) {
     let runsResponse: any;
-    let retry = true;
-
-    // Retry mechanism for rate limiting (status code 420)
+    let retry = true; // Retry mechanism for rate limiting (status code 420)
     while (retry) {
       runsResponse = await fetch(nextUrl);
       if (runsResponse.status === 420) {
@@ -39,11 +35,9 @@ export async function fetchAllRunsData(
         retry = false;
       }
     }
-
     if (!runsResponse.ok) {
       throw new Error("Failed to fetch runs");
     }
-
     const runsData = await runsResponse.json();
     const newRuns = runsData.data as RunData[];
     allRuns = allRuns.concat(newRuns);
@@ -103,20 +97,21 @@ export async function fetchAllRunsData(
   return sortedRuns;
 }
 
-/**
+/***
  * Fetches leaderboard data for a given game, category, and variables.
- *
  * @param gameId The ID of the game.
  * @param selectedCategory The ID of the selected category.
  * @param selectedVariables The selected variables and their values.
+ * @param top The number of runs to fetch. Default is 10.
  * @returns A promise that resolves to the leaderboard data.
  */
 export async function fetchLeaderboardData(
   gameId: string,
   selectedCategory: string,
-  selectedVariables: VariableValues
+  selectedVariables: VariableValues,
+  top: number = 10 // Added optional top parameter
 ): Promise<Leaderboard> {
-  let url = `https://www.speedrun.com/api/v1/leaderboards/${gameId}/category/${selectedCategory}?top=100&embed=players`;
+  let url = `https://www.speedrun.com/api/v1/leaderboards/${gameId}/category/${selectedCategory}?top=${top}&embed=players`; // Use top parameter
   Object.entries(selectedVariables).forEach(([varId, value]) => {
     url += `&var-${varId}=${value.id}`;
   });
@@ -130,9 +125,8 @@ export async function fetchLeaderboardData(
   return leaderboardData.data;
 }
 
-/**
+/***
  * Processes runs data to generate animation frames for the top 10 history.
- *
  * @param runs An array of RunData.
  * @returns An array of animation frames, each containing a date and the top 10 runs for that date.
  */
@@ -147,11 +141,11 @@ export function processRunsForAnimation(runs: RunData[]) {
 
     if (player) {
       if (player.rel === "guest" && player.name) {
-        const duplicateGuestIndex = currentTop10.findIndex((topRun) => {
-          const topPlayer = topRun.players.data[0];
-          return topPlayer.rel === "guest" && topPlayer.name === player.name;
-        });
-
+        const duplicateGuestIndex = currentTop10.findIndex(
+          (topRun) =>
+            topRun.players.data[0].rel === "guest" &&
+            topRun.players.data[0].name === player.name
+        );
         if (duplicateGuestIndex !== -1) {
           if (
             run.times.primary_t <
@@ -176,7 +170,6 @@ export function processRunsForAnimation(runs: RunData[]) {
         const duplicateUserIndex = currentTop10.findIndex(
           (topRun) => topRun.players.data[0].id === player.id
         );
-
         if (duplicateUserIndex !== -1) {
           if (
             run.times.primary_t <
@@ -210,9 +203,8 @@ export function processRunsForAnimation(runs: RunData[]) {
   return animationFrames;
 }
 
-/**
+/***
  * Retrieves the top 10 runs for a specific date.
- *
  * @param runs An array of RunData.
  * @param date The target date in ISO format.
  * @returns An array of the top 10 runs for the specified date.

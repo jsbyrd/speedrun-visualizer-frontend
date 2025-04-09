@@ -67,6 +67,7 @@ export type Run = {
 };
 
 export type RunDetails = {
+  id: string;
   times: {
     primary_t: number;
   };
