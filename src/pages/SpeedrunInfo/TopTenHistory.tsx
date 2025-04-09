@@ -20,6 +20,12 @@ import {
 import { processRunsForAnimation } from "./utils";
 import { format, parseISO, addDays, isValid } from "date-fns";
 import { CircularProgress } from "@mui/material";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TopTenHistoryProps {
   runs: RunData[];
@@ -241,7 +247,7 @@ const TopTenHistory: React.FC<TopTenHistoryProps> = ({
           onClick={onFetchRuns}
           className="border border-white bg-transparent text-white hover:bg-white/10"
         >
-          Create Top 10 History
+          Generate Top 10 History
         </Button>
       </div>
     );
@@ -249,52 +255,91 @@ const TopTenHistory: React.FC<TopTenHistoryProps> = ({
 
   return (
     <div className="mt-10">
-      <h2 className="text-2xl font-bold mb-4">Top10HistoryAnimation</h2>
       {animationData.length > 0 && (
         <div ref={animationRef}>
           <p>Date: {animationDate}</p>
           <ul className="flex flex-col gap-1">{listItems}</ul>
         </div>
       )}
-      <div className="flex gap-2 mt-4">
-        <Button
-          onClick={handleGoToStart}
-          className="border border-white bg-transparent text-white hover:bg-white/10"
-        >
-          <FastRewind />
-        </Button>
-        <Button
-          onClick={handleGoReverse}
-          className="border border-white bg-transparent text-white hover:bg-white/10"
-        >
-          <SkipPrevious />
-        </Button>
-        <Button
-          onClick={handlePlayPause}
-          className="border border-white bg-transparent text-white hover:bg-white/10"
-        >
-          {isPlaying ? <Pause /> : <PlayArrow />}
-        </Button>
-        <Button
-          onClick={handleGoForward}
-          className="border border-white bg-transparent text-white hover:bg-white/10"
-        >
-          <SkipNext />
-        </Button>
-        <Button
-          onClick={handleGoToToday}
-          className="border border-white bg-transparent text-white hover:bg-white/10"
-        >
-          <FastForward />
-        </Button>
-      </div>
+      <TooltipProvider>
+        <div className="flex gap-2 mt-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleGoToStart}
+                className="border border-white bg-transparent text-white hover:bg-white/10"
+              >
+                <FastRewind />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Go to the start of the animation.</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleGoReverse}
+                className="border border-white bg-transparent text-white hover:bg-white/10"
+              >
+                <SkipPrevious />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Go to the previous frame.</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handlePlayPause}
+                className="border border-white bg-transparent text-white hover:bg-white/10"
+              >
+                {isPlaying ? <Pause /> : <PlayArrow />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isPlaying ? "Pause the animation." : "Play the animation."}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleGoForward}
+                className="border border-white bg-transparent text-white hover:bg-white/10"
+              >
+                <SkipNext />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Go to the next frame.</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleGoToToday}
+                className="border border-white bg-transparent text-white hover:bg-white/10"
+              >
+                <FastForward />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Go to the current date.</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
       <div className="mt-2">
+        <label className="block mb-1 text-white">Animation Speed</label>
         <Select
           value={(1 / (animationSpeed / 100)).toString()}
           onValueChange={handleSpeedChange}
         >
           <SelectTrigger className="w-[180px] border border-white bg-transparent text-white">
-            <SelectValue placeholder="SelectSpeed" />
+            <SelectValue placeholder="Select Speed" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="0.25">0.25x</SelectItem>
