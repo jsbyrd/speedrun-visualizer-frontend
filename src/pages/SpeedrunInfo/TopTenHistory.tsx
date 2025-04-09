@@ -241,7 +241,7 @@ const TopTenHistory: React.FC<TopTenHistoryProps> = ({
           onClick={onFetchRuns}
           className="border border-white bg-transparent text-white hover:bg-white/10"
         >
-          CreateTop10History
+          Create Top 10 History
         </Button>
       </div>
     );

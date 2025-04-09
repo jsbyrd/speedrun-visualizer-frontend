@@ -47,6 +47,7 @@ export type VariableValues = {
   [key: string]: {
     label: string;
     id: string;
+    rules: string;
   };
 };
 

@@ -32,6 +32,7 @@ const SpeedrunInfo = () => {
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
   const [runs, setRuns] = useState<RunData[]>([]);
   const [isLoadingRuns, setIsLoadingRuns] = useState(false);
+
   useEffect(() => {
     const fetchGameData = async () => {
       if (!gameId) {
@@ -84,17 +85,21 @@ const SpeedrunInfo = () => {
             variable.mandatory &&
             (!variable.scope.type || !variable.scope.type.includes("level"))
         );
-        setAvailableVariables(categoryVariables);
-        const initialSelectedVariables: {
-          [key: string]: { id: string; label: string };
-        } = {};
-        categoryVariables.forEach((variable) => {
+
+        const validVariables = categoryVariables.filter(isValidVariable);
+
+        setAvailableVariables(validVariables);
+
+        const initialSelectedVariables: VariableValues = {};
+        validVariables.forEach((variable) => {
           if (variable.values && variable.values.values) {
             const firstValueId = Object.keys(variable.values.values)[0];
             const firstValueLabel = variable.values.values[firstValueId].label;
+            const firstValueRules = variable.values.values[firstValueId].rules;
             initialSelectedVariables[variable.id] = {
               id: firstValueId,
               label: firstValueLabel,
+              rules: firstValueRules,
             };
           }
         });
@@ -133,7 +138,6 @@ const SpeedrunInfo = () => {
         selectedCategory,
         selectedVariables
       );
-
       setRuns(allRuns);
     } catch (error) {
       console.log(error);
@@ -152,8 +156,9 @@ const SpeedrunInfo = () => {
   }, [game, selectedCategory, selectedVariables]);
 
   const handleDebug = () => {
-    const suigiBestRun = runs.find((run) => run.times.primary_t == 5728);
-    console.log(suigiBestRun);
+    //constsuigiBestRun=runs.find((run)=>run.times.primary_t==5728);
+    //console.log(suigiBestRun);
+    console.log("leaderboard", leaderboard);
     console.log("gameId", gameId);
     console.log("categoryId", selectedCategory);
     console.log("variables", selectedVariables);
@@ -185,7 +190,7 @@ const SpeedrunInfo = () => {
       <Tabs defaultValue="chart" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mt-12">
           <TabsTrigger value="chart">Chart</TabsTrigger>
-          <TabsTrigger value="history">Top 10 History</TabsTrigger>
+          <TabsTrigger value="history">Top10History</TabsTrigger>
         </TabsList>
         <TabsContent value="chart">
           <ChartDisplay leaderboard={leaderboard} />
@@ -201,5 +206,19 @@ const SpeedrunInfo = () => {
     </div>
   );
 };
+
+function isValidVariable(variable: Variable) {
+  if (!variable.values || !variable.values.values) {
+    return true;
+  }
+
+  for (const valueKey in variable.values.values) {
+    if (variable.values.values[valueKey].rules === "test") {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 export default SpeedrunInfo;

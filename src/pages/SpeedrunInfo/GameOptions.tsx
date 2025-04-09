@@ -6,22 +6,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Variable, Category } from "./types";
-
-export type SelectedVariables = {
-  [variableId: string]: {
-    id: string;
-    label: string;
-  };
-};
+import { Variable, Category, VariableValues } from "./types";
 
 type GameOptionsProps = {
   categories: Category[];
   availableVariables: Variable[];
   selectedCategory: string | null;
-  selectedVariables: SelectedVariables;
+  selectedVariables: VariableValues;
   setSelectedCategory: (categoryId: string | null) => void;
-  setSelectedVariables: (variables: SelectedVariables) => void;
+  setSelectedVariables: (variables: VariableValues) => void;
 };
 
 const GameOptions: React.FC<GameOptionsProps> = ({
@@ -65,6 +58,7 @@ const GameOptions: React.FC<GameOptionsProps> = ({
                     [variable.id]: {
                       id: valueId,
                       label: selectedValue.label,
+                      rules: selectedValue.rules,
                     },
                   });
                 }
