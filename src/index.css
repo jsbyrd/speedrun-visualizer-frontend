@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Space Grotesk", sans-serif;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

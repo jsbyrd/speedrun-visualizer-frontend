@@ -9,7 +9,7 @@ const Home = () => {
         Visualize Speedrunning History
       </h1>
       <p className="text-lg sm:text-xl md:text-2xl text-center mb-12">
-        Explore the evolution of speedruns and track records over time.
+        Explore the evolution of speedruns and records over time.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
