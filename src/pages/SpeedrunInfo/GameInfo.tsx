@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useFavorites } from "@/components/FavoritesProvider/FavoritesProvider";
 import customAxios from "@/api/custom-axios";
 import { toast } from "sonner";
+import { useUser } from "@/components/UserProvider/use-user-hook";
 
 type GameInfoProps = {
   game: Game;
@@ -14,6 +15,7 @@ const GameInfo: React.FC<GameInfoProps> = ({ game }) => {
   if (!game) return null;
   const { favorites, fetchFavorites } = useFavorites();
   const [isFavorited, setIsFavorited] = useState(false);
+  const { isLoggedIn } = useUser(); // Get isLoggedIn from UserProvider
 
   useEffect(() => {
     if (favorites) {
@@ -127,14 +129,16 @@ const GameInfo: React.FC<GameInfoProps> = ({ game }) => {
               Speedrun.com
             </a>
           )}
-          <button
-            onClick={handleFavoriteClick}
-            className={`ml-2 px-2 py-2 transition-colors duration-100 hover:cursor-pointer ${
-              isFavorited ? "text-red-500" : "text-white"
-            }`}
-          >
-            <Heart className="w-6 h-6" fill={isFavorited ? "red" : "none"} />
-          </button>
+          {isLoggedIn && (
+            <button
+              onClick={handleFavoriteClick}
+              className={`ml-2 px-2 py-2 transition-colors duration-100 hover:cursor-pointer ${
+                isFavorited ? "text-red-500" : "text-white"
+              }`}
+            >
+              <Heart className="w-6 h-6" fill={isFavorited ? "red" : "none"} />
+            </button>
+          )}
         </div>
       </div>
     </div>
